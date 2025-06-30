@@ -1,0 +1,12 @@
+console.log("=========");
+console.log('Injecting version into ui.html');
+console.log("=========");
+const fs = require('fs');
+const path = require('path');
+const pkg = require('../package.json');
+const uiPath = path.join(__dirname, '../dist/ui.html');
+let html = fs.readFileSync(uiPath, 'utf8');
+html = html.replace(/__LUSH_CACHIFY_VERSION__/g, pkg.version);
+fs.writeFileSync(uiPath, html, 'utf8');
+console.log('Injected version into ui.html');
+console.log("=========");
