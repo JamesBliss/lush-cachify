@@ -44,9 +44,4 @@ app.listen(3000, () => {
 - Modern, responsive UI (visit `/cachify` in your browser)
 - Safe, batched deletes for large datasets
 - Rate limiting for all endpoints
-- Supports RedisJSON and standard Redis types
 - Custom logger support
-
-## License
-
-MIT
