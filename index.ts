@@ -41,6 +41,21 @@ export function lushCachify(options: LushCachifyOptions): Router {
     success: options.logger?.success || console.log,
   };
 
+  // Track Redis connection health
+  let redisHealthy = true;
+  redis.on('error', (err) => {
+    redisHealthy = false;
+    logger.error(`[lush-cachify] Redis connection error: ${err.message}`);
+  });
+  redis.on('end', () => {
+    redisHealthy = false;
+    logger.error('[lush-cachify] Redis connection closed.');
+  });
+  redis.on('connect', () => {
+    redisHealthy = true;
+    logger.info('[lush-cachify] Connected to Redis.');
+  });
+
   // Rate limiting middleware (30 requests/minute per IP)
   const limiter = rateLimit({
     windowMs: 60 * 1000,
@@ -53,12 +68,7 @@ export function lushCachify(options: LushCachifyOptions): Router {
 
   // Redis status endpoint
   router.get('/status', async (_req, res) => {
-    try {
-      const pong = await redis.ping();
-      res.json({ status: pong === 'PONG' ? 'ok' : 'unhealthy' });
-    } catch (err: any) {
-      res.status(500).json({ status: 'error', error: err.message });
-    }
+    res.json({ status: redisHealthy ? 'ok' : 'unhealthy' });
   });
 
   // Search for keys (supports wildcards) using scan for pagination
